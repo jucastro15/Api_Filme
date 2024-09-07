@@ -1,12 +1,12 @@
 
-import salvarfilmeService from "../service/filme/salvarFilmesService.js";
-import consultarFilmesService from "../service/filme/consultarFilmesService.js";
-import consultarIdService from "../service/filme/consultarIdService.js";
+import * as db from "../service/filme/salvarFilmesService.js";
+
+
 import { Router } from "express";
-import alterarFilmeService from "../service/filme/alterarFilmeService.js";
-import deletarFilmesService from "../service/filme/deletarFilmeService.js";
+
 import multer from "multer";
 import { sync } from "touch";
+import alterarListaFilme from "../service/filme/alterarImgfilme.js";
 const endpoints = Router()
 
 endpoints.post('/filme', async (req, resp) => {
@@ -14,7 +14,7 @@ endpoints.post('/filme', async (req, resp) => {
     try {
         let filmeObj = req.body;
 
-        let id = await salvarfilmeService(filmeObj)
+        let id = await db.salvarfilmeService(filmeObj)
 
         resp.send({
             id: id
@@ -33,7 +33,7 @@ endpoints.get('/filme', async (req, resp) => {
     try {
         let nome = req.query.nome; 
 
-        let registros = await consultarFilmesService(nome);
+        let registros = await db.consultarFilmesService(nome);
 
         resp.send(registros);
 
@@ -46,7 +46,7 @@ endpoints.get('/filme', async (req, resp) => {
 endpoints.get('/filme/:id', async (req, resp) => {
     try {
         let id = req.params.id;
-        let filme = await consultarIdService(id);
+        let filme = await db.consultarIdService(id);
         resp.send(filme);
 
     } catch (err) {
@@ -61,7 +61,7 @@ endpoints.put('/filme/:id', async (req, resp) => {
         let filmeObj = req.body;
         let id = req.params.id
 
-       await alterarFilmeService(filmeObj, id)
+       await db.alterarFilmeService(filmeObj, id)
        resp.status(204).send(); 
     
     } catch (err) {
@@ -74,7 +74,7 @@ endpoints.delete('/filme/:id', async (req, resp) => {
     try {
         let id = req.params.id;
 
-        await deletarFilmesService(id);
+        await db.deletarFilmesService(id);
 
         resp.status(204).send(); 
     
@@ -87,23 +87,19 @@ endpoints.delete('/filme/:id', async (req, resp) => {
 
 let upLoadPerfil = multer({ dest: './storage/perfil'})
 
-endpoints.put('/filme', upLoadPerfil.single('imagem'),async (req, resp) => {
+endpoints.put('/filme/:id/image', upLoadPerfil.single('imagem'), async (req, resp) => {
 
     try {
         let id = req.params.id;
-
-        await deletarFilmesService(id);
-
-        resp.status(204).send(); 
-    
+        let caminho = req.file.path;
+        await alterarListaFilme(id, caminho)
+        resp.send();
 
     } catch (err) {
         logError(err);
-        resp.status(400).send(criarErro(err)); 
+        resp.status(400).send(criarErro(err));
     }
 });
-
-
 
 
 

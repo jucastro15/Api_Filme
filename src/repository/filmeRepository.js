@@ -85,3 +85,17 @@ export async function deletarFilmes(id) {
 
      return linhasDeletadas;
 }
+
+export async function alterarImg(id, caminho) {
+   const comando =
+       `UPDATE tb_filme
+       SET img_filme = ?
+       WHERE id_filme = ?;`;
+
+   const resposta = await con.query(comando, [caminho, id]);
+
+   let info = resposta[0]
+   let linhasAfetadas = info.affectedRows
+
+   return linhasAfetadas
+}
